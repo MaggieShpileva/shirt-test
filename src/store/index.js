@@ -2,6 +2,7 @@ import { proxy } from "valtio";
 
 export const DEFAULT_FABRIC_COLOR = "#0C1520";
 export const FABRIC_COLOR_WITH_TEXTURE = "#FFFFFF";
+export const DEFAULT_OVERLAY_SCALE = 0.4;
 
 const state = proxy({
   intro: false,
@@ -23,7 +24,12 @@ const state = proxy({
   clearSignal: 0,
   downloadUvSignal: 0,
   downloadUvIncludeTexture: true,
+  downloadGlbSignal: 0,
+  isExportingGlb: false,
   overlayImage: null,
+  overlayScale: DEFAULT_OVERLAY_SCALE,
+  overlayOffsetX: 0,
+  overlayOffsetY: 0,
   overlaySignal: 0,
   clearOverlaySignal: 0,
   // Угол вращения модели [x, y]

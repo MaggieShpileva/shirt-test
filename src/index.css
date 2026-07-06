@@ -40,11 +40,12 @@ html {
 }
 
 .filtertabs-container {
-  width: fit-content;
+  width: 100%;
+  padding: 0 10px;
+  flex-wrap: wrap;
   left: 50%;
   transform: translateX(-50%) !important;
-  flex-wrap: nowrap;
-  @apply absolute z-10 bottom-6 flex justify-center items-center gap-4;
+  @apply absolute z-10 bottom-6 flex justify-center items-center gap-2;
 }
 
 .aipicker-container {

@@ -6,10 +6,12 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import * as THREE from "three";
 
 import state from "../store";
+import { DEFAULT_OVERLAY_SCALE } from "../store";
 import { ShirtMaterials, ChestLogoPlacement, BackNumberPlacement, LogoDecalTransform } from "../config/constants";
 import { getMaterialPreview } from "../config/preloadMaterials";
 import { loadLogoImage } from "../config/logoSvg";
 import { loadBackNumberImage } from "../config/backNumberSvg";
+import { exportShirtToGlb } from "../config/exportGlb";
 
 const CANVAS_SIZE = 1024;
 
@@ -126,6 +128,23 @@ const drawChestLogo = (ctx, image, uv) =>
 const drawBackNumber = (ctx, image, uv) =>
   drawPlacementGraphic(ctx, clearBackNumberLayer, image, uv, BackNumberPlacement, 80 / 120);
 
+const drawOverlayImage = (ctx, image, scale, offsetX, offsetY) => {
+  if (!ctx || !image || !isImageReady(image)) return false;
+
+  clearOverlayLayer(ctx);
+
+  const width = CANVAS_SIZE * scale;
+  const aspect = image.naturalWidth > 0 ? image.naturalHeight / image.naturalWidth : 1;
+  const height = width * aspect;
+  const centerX = CANVAS_SIZE / 2 + offsetX * CANVAS_SIZE;
+  const centerY = CANVAS_SIZE / 2 + offsetY * CANVAS_SIZE;
+  const x = centerX - width / 2;
+  const y = centerY - height / 2;
+
+  ctx.drawImage(image, x, y, width, height);
+  return true;
+};
+
 const getChestLogoUv = () => ChestLogoPlacement.fallbackUv;
 
 const getBackNumberUv = () => BackNumberPlacement.fallbackUv;
@@ -171,6 +190,7 @@ const Shirt = () => {
   const lastUvRef = useRef(null);
   const clearSignalRef = useRef(snap.clearSignal);
   const downloadUvSignalRef = useRef(snap.downloadUvSignal);
+  const downloadGlbSignalRef = useRef(snap.downloadGlbSignal);
   const overlaySignalRef = useRef(snap.overlaySignal);
   const clearOverlaySignalRef = useRef(snap.clearOverlaySignal);
   const shirtMaterialRef = useRef(snap.shirtMaterial);
@@ -189,9 +209,15 @@ const Shirt = () => {
   const originalRoughnessMapRef = useRef(null);
   const colorRef = useRef(snap.color);
   const brushSizeRef = useRef(snap.brushSize);
+  const overlayScaleRef = useRef(snap.overlayScale);
+  const overlayOffsetXRef = useRef(snap.overlayOffsetX);
+  const overlayOffsetYRef = useRef(snap.overlayOffsetY);
 
   colorRef.current = snap.color;
   brushSizeRef.current = snap.brushSize;
+  overlayScaleRef.current = snap.overlayScale;
+  overlayOffsetXRef.current = snap.overlayOffsetX;
+  overlayOffsetYRef.current = snap.overlayOffsetY;
 
   const { gl, camera } = useThree();
   const raycaster = useMemo(() => new THREE.Raycaster(), []);
@@ -292,7 +318,7 @@ const Shirt = () => {
   const ensureLogoLayer = () => {
     const ctx = logoCtxRef.current;
     const img = logoImageRef.current;
-    if (!ctx || !img?.complete) return false;
+    if (!ctx || !isImageReady(img)) return false;
 
     if (!logoUvRef.current) {
       logoUvRef.current = getChestLogoUv();
@@ -304,7 +330,7 @@ const Shirt = () => {
   const ensureBackNumberLayer = () => {
     const ctx = backNumberCtxRef.current;
     const img = backNumberImageRef.current;
-    if (!ctx || !img?.complete) return false;
+    if (!ctx || !isImageReady(img)) return false;
 
     if (!backNumberUvRef.current) {
       backNumberUvRef.current = getBackNumberUv();
@@ -382,8 +408,7 @@ const Shirt = () => {
     }
 
     if (overlayImageCacheRef.current && overlayCtx) {
-      clearOverlayLayer(overlayCtx);
-      overlayCtx.drawImage(overlayImageCacheRef.current, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
+      drawOverlayImage(overlayCtx, overlayImageCacheRef.current, overlayScaleRef.current, overlayOffsetXRef.current, overlayOffsetYRef.current);
     }
 
     const ctx = outputCanvas.getContext("2d");
@@ -423,8 +448,7 @@ const Shirt = () => {
     const img = new Image();
     img.onload = () => {
       overlayImageCacheRef.current = img;
-      clearOverlayLayer(overlayCtx);
-      overlayCtx.drawImage(img, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
+      drawOverlayImage(overlayCtx, img, overlayScaleRef.current, overlayOffsetXRef.current, overlayOffsetYRef.current);
       compositeLayers();
     };
     img.src = overlayImageDataRef.current;
@@ -597,12 +621,18 @@ const Shirt = () => {
     const img = new Image();
     img.onload = () => {
       overlayImageCacheRef.current = img;
-      clearOverlayLayer(overlayCtx);
-      overlayCtx.drawImage(img, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
+      drawOverlayImage(overlayCtx, img, overlayScaleRef.current, overlayOffsetXRef.current, overlayOffsetYRef.current);
       compositeLayers();
     };
     img.src = snap.overlayImage;
   }, [snap.overlaySignal, snap.overlayImage]);
+
+  useEffect(() => {
+    if (!overlayImageCacheRef.current || !overlayCtxRef.current) return;
+
+    drawOverlayImage(overlayCtxRef.current, overlayImageCacheRef.current, snap.overlayScale, snap.overlayOffsetX, snap.overlayOffsetY);
+    compositeLayers();
+  }, [snap.overlayScale, snap.overlayOffsetX, snap.overlayOffsetY]);
 
   useEffect(() => {
     if (snap.clearOverlaySignal === clearOverlaySignalRef.current) return;
@@ -615,41 +645,89 @@ const Shirt = () => {
     overlayImageDataRef.current = null;
     overlayImageCacheRef.current = null;
     state.overlayImage = null;
+    state.overlayScale = DEFAULT_OVERLAY_SCALE;
+    state.overlayOffsetX = 0;
+    state.overlayOffsetY = 0;
     compositeLayers();
   }, [snap.clearOverlaySignal]);
 
-  const buildExportCanvas = (includeTexture) => {
+  const ensureDecorationLayers = async () => {
+    if (!isImageReady(logoImageRef.current)) {
+      await refreshLogoImage(initGenerationRef.current);
+    } else {
+      ensureLogoLayer();
+    }
+
+    if (!isImageReady(backNumberImageRef.current)) {
+      await refreshBackNumberImage(initGenerationRef.current);
+    } else {
+      ensureBackNumberLayer();
+    }
+  };
+
+  const buildExportCanvas = (includeTexture, includeDecorations = false) => {
+    const baseCanvas = baseCanvasRef.current;
     const logoCanvas = logoCanvasRef.current;
     const backNumberCanvas = backNumberCanvasRef.current;
     const overlayCanvas = overlayCanvasRef.current;
     const paintCanvas = paintCanvasRef.current;
-    const outputCanvas = outputCanvasRef.current;
+    const baseCtx = baseCtxRef.current;
     const overlayCtx = overlayCtxRef.current;
-    if (!logoCanvas || !backNumberCanvas || !overlayCanvas || !paintCanvas) return null;
+    if (!baseCanvas || !logoCanvas || !backNumberCanvas || !overlayCanvas || !paintCanvas || !baseCtx) return null;
 
     if (overlayImageCacheRef.current && overlayCtx) {
-      clearOverlayLayer(overlayCtx);
-      overlayCtx.drawImage(overlayImageCacheRef.current, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
+      drawOverlayImage(overlayCtx, overlayImageCacheRef.current, overlayScaleRef.current, overlayOffsetXRef.current, overlayOffsetYRef.current);
     }
 
-    if (includeTexture) {
-      compositeLayers();
-      return outputCanvas;
+    const materialPath = shirtMaterialRef.current;
+    const cachedImage =
+      (materialPath && baseTextureCacheRef.current[materialPath]) ||
+      (materialPath && getMaterialPreview(materialPath));
+    const hasFabricTexture = isImageReady(cachedImage);
+
+    if (cachedImage && baseCtx) {
+      fillCanvasBase(baseCtx, cachedImage, fabricColorRef.current);
+    } else {
+      fillCanvasBase(baseCtx, null, fabricColorRef.current);
+    }
+
+    if (includeDecorations) {
+      ensureLogoLayer();
+      ensureBackNumberLayer();
     }
 
     const exportCanvas = document.createElement("canvas");
     exportCanvas.width = CANVAS_SIZE;
     exportCanvas.height = CANVAS_SIZE;
     const ctx = exportCanvas.getContext("2d");
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-    ctx.globalCompositeOperation = "source-over";
-    ctx.drawImage(overlayCanvas, 0, 0);
-    ctx.drawImage(paintCanvas, 0, 0);
-    ensureLogoLayer();
-    ensureBackNumberLayer();
-    ctx.drawImage(logoCanvas, 0, 0);
-    ctx.drawImage(backNumberCanvas, 0, 0);
+
+    if (includeTexture) {
+      ctx.globalCompositeOperation = "source-over";
+      ctx.drawImage(baseCanvas, 0, 0);
+
+      if (hasFabricTexture) {
+        ctx.globalCompositeOperation = "color";
+        ctx.drawImage(overlayCanvas, 0, 0);
+        ctx.drawImage(paintCanvas, 0, 0);
+      } else {
+        ctx.globalCompositeOperation = "source-over";
+        ctx.drawImage(overlayCanvas, 0, 0);
+        ctx.drawImage(paintCanvas, 0, 0);
+      }
+    } else {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+      ctx.globalCompositeOperation = "source-over";
+      ctx.drawImage(overlayCanvas, 0, 0);
+      ctx.drawImage(paintCanvas, 0, 0);
+    }
+
+    if (includeDecorations) {
+      ctx.globalCompositeOperation = "source-over";
+      ctx.drawImage(logoCanvas, 0, 0);
+      ctx.drawImage(backNumberCanvas, 0, 0);
+    }
+
     return exportCanvas;
   };
 
@@ -657,16 +735,59 @@ const Shirt = () => {
     if (snap.downloadUvSignal === downloadUvSignalRef.current) return;
     downloadUvSignalRef.current = snap.downloadUvSignal;
 
-    const canvas = buildExportCanvas(snap.downloadUvIncludeTexture);
-    if (!canvas) return;
+    const runDownload = async () => {
+      if (!setupCanvasLayers()) return;
 
-    const link = document.createElement("a");
-    link.href = canvas.toDataURL("image/png");
-    link.download = snap.downloadUvIncludeTexture ? "shirt-uv.png" : "shirt-uv-plain.png";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      try {
+        const canvas = buildExportCanvas(snap.downloadUvIncludeTexture, false);
+        if (!canvas) return;
+
+        const link = document.createElement("a");
+        link.href = canvas.toDataURL("image/png");
+        link.download = snap.downloadUvIncludeTexture ? "shirt-uv.png" : "shirt-uv-plain.png";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error("Failed to export UV map:", error);
+        alert("Не удалось сохранить развёртку.");
+      }
+    };
+
+    runDownload();
   }, [snap.downloadUvSignal, snap.downloadUvIncludeTexture]);
+
+  useEffect(() => {
+    if (snap.downloadGlbSignal === downloadGlbSignalRef.current) return;
+    downloadGlbSignalRef.current = snap.downloadGlbSignal;
+
+    const runExport = async () => {
+      state.isExportingGlb = true;
+      try {
+        if (!setupCanvasLayers()) {
+          throw new Error("Model is not ready for export");
+        }
+
+        await ensureDecorationLayers();
+        const canvas = buildExportCanvas(true, true);
+        const geometry = nodes.T_Shirt_male?.geometry;
+        const mat = shirtMatRef.current;
+
+        if (!canvas || !geometry) {
+          throw new Error("Model is not ready for export");
+        }
+
+        await exportShirtToGlb(geometry, canvas, mat);
+      } catch (error) {
+        console.error("Failed to export GLB:", error);
+        alert("Не удалось сохранить 3D-модель. Попробуйте ещё раз.");
+      } finally {
+        state.isExportingGlb = false;
+      }
+    };
+
+    runExport();
+  }, [snap.downloadGlbSignal]);
 
   const getUvFromEvent = (event) => {
     const mesh = meshRef.current;

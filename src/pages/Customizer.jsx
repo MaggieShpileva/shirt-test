@@ -20,6 +20,11 @@ const Customizer = () => {
   const [generatingImg, setGeneratingImg] = useState(false);
   const [isTakingScreenshot, setIsTakingScreenshot] = useState(false);
 
+  const handleDownloadGlb = () => {
+    if (snap.isExportingGlb) return;
+    state.downloadGlbSignal += 1;
+  };
+
   const [activeEditorTab, setActiveEditorTab] = useState("");
   const [activeFilterTab, setActiveFilterTab] = useState({
     logoShirt: true,
@@ -155,11 +160,38 @@ const Customizer = () => {
           {activeEditorTab === "variantgallery" && <VariantGallery />}
 
           <motion.div className="filtertabs-container" {...slideAnimation("up")}>
-            <button type="button" onClick={() => (state.isPainting = !state.isPainting)} className={`py-2.5 px-5 rounded-full text-sm font-semibold transition-colors glassmorphism bg-blue-500 ${snap.isPainting ? "bg-blue-500" : "text-gray-700"}`}>
+            <button
+              type="button"
+              onClick={() => (state.isPainting = !state.isPainting)}
+              className={`whitespace-nowrap py-2.5 px-5 rounded-full text-[10px] font-semibold transition-colors glassmorphism bg-blue-500 ${snap.isPainting ? "bg-blue-500" : "text-gray-700"}`}
+            >
               {snap.isPainting ? "Рисование: ВКЛ" : "Рисование: ВЫКЛ"}
             </button>
-            <button type="button" onClick={handleScreenshot} disabled={isTakingScreenshot} className="py-2.5 px-5 rounded-full text-sm font-semibold transition-colors glassmorphism text-gray-700 disabled:opacity-50 text">
+            <button
+              type="button"
+              onClick={() => {
+                state.downloadUvIncludeTexture = true;
+                state.downloadUvSignal += 1;
+              }}
+              className="whitespace-nowrap py-2.5 px-5 rounded-full text-[10px] font-semibold transition-colors glassmorphism text-gray-700"
+            >
+              Скачать развёртку
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                state.downloadUvIncludeTexture = false;
+                state.downloadUvSignal += 1;
+              }}
+              className="whitespace-nowrap py-2.5 px-5 rounded-full text-[10px] font-semibold transition-colors glassmorphism text-gray-700"
+            >
+              Скачать без текстуры
+            </button>
+            <button type="button" onClick={handleScreenshot} disabled={isTakingScreenshot} className="whitespace-nowrap py-2.5 px-5 rounded-full text-[10px] font-semibold transition-colors glassmorphism text-gray-700 disabled:opacity-50">
               {isTakingScreenshot ? "Сохранение..." : "Сделать скриншот"}
+            </button>
+            <button type="button" onClick={handleDownloadGlb} disabled={snap.isExportingGlb} className="whitespace-nowrap py-2.5 px-5 rounded-full text-[10px] font-semibold transition-colors glassmorphism text-gray-700 disabled:opacity-50">
+              {snap.isExportingGlb ? "Экспорт..." : "Скачать 3D-модель"}
             </button>
           </motion.div>
         </>
