@@ -5,10 +5,11 @@ import { useSnapshot } from "valtio";
 import config from "../config/config";
 import state from "../store";
 import { download } from "../assets";
-import { downloadCanvasToImage, reader } from "../config/helpers";
+import { downloadCanvasToImage, reader, takeFrontBackScreenshots } from "../config/helpers";
 import { EditorTabs, FilterTabs, DecalTypes } from "../config/constants";
 import { fadeAnimation, slideAnimation } from "../config/motion";
-import { AIPicker, ColorPicker, CustomButton, FilePicker, Tab } from "../components";
+import { AIPicker, ColorPicker, CustomButton, FilePicker, ImageOverlayPicker, LogoColorPicker, BackNumberColorPicker, MaterialPicker, Tab, VariantGallery } from "../components";
+import { preloadMaterialPreviews } from "../config/preloadMaterials";
 
 const Customizer = () => {
   const snap = useSnapshot(state);
@@ -17,6 +18,7 @@ const Customizer = () => {
 
   const [prompt, setPrompt] = useState("");
   const [generatingImg, setGeneratingImg] = useState(false);
+  const [isTakingScreenshot, setIsTakingScreenshot] = useState(false);
 
   const [activeEditorTab, setActiveEditorTab] = useState("");
   const [activeFilterTab, setActiveFilterTab] = useState({
@@ -24,11 +26,23 @@ const Customizer = () => {
     stylishShirt: false,
   });
 
+  useEffect(() => {
+    preloadMaterialPreviews();
+  }, []);
+
   // show tab content depending on the activeTab
   const generateTabContent = () => {
     switch (activeEditorTab) {
       case "colorpicker":
         return <ColorPicker />;
+      case "materialpicker":
+        return <MaterialPicker />;
+      case "imageoverlay":
+        return <ImageOverlayPicker />;
+      case "logocolorpicker":
+        return <LogoColorPicker />;
+      case "backnumberpicker":
+        return <BackNumberColorPicker />;
       case "filepicker":
         return <FilePicker file={file} setFile={setFile} readFile={readFile} />;
       case "aipicker":
@@ -106,6 +120,16 @@ const Customizer = () => {
     });
   };
 
+  const handleScreenshot = async () => {
+    if (isTakingScreenshot) return;
+    setIsTakingScreenshot(true);
+    try {
+      await takeFrontBackScreenshots();
+    } finally {
+      setIsTakingScreenshot(false);
+    }
+  };
+
   return (
     <AnimatePresence>
       {!snap.intro && (
@@ -114,7 +138,13 @@ const Customizer = () => {
             <div className="flex items-center min-h-screen">
               <div className="editortabs-container tabs">
                 {EditorTabs.map((tab) => (
-                  <Tab key={tab.name} tab={tab} handleClick={() => setActiveEditorTab((prev) => (prev === tab.name ? "" : tab.name))} />
+                  <Tab
+                    key={tab.name}
+                    tab={tab}
+                    isActiveTab={activeEditorTab === tab.name}
+                    handleClick={() => setActiveEditorTab((prev) => (prev === tab.name ? "" : tab.name))}
+                    onMouseEnter={tab.name === "materialpicker" || tab.name === "variantgallery" ? preloadMaterialPreviews : undefined}
+                  />
                 ))}
 
                 {generateTabContent()}
@@ -122,9 +152,14 @@ const Customizer = () => {
             </div>
           </motion.div>
 
+          {activeEditorTab === "variantgallery" && <VariantGallery />}
+
           <motion.div className="filtertabs-container" {...slideAnimation("up")}>
             <button type="button" onClick={() => (state.isPainting = !state.isPainting)} className={`py-2.5 px-5 rounded-full text-sm font-semibold transition-colors glassmorphism bg-blue-500 ${snap.isPainting ? "bg-blue-500" : "text-gray-700"}`}>
               {snap.isPainting ? "Рисование: ВКЛ" : "Рисование: ВЫКЛ"}
+            </button>
+            <button type="button" onClick={handleScreenshot} disabled={isTakingScreenshot} className="py-2.5 px-5 rounded-full text-sm font-semibold transition-colors glassmorphism text-gray-700 disabled:opacity-50 text">
+              {isTakingScreenshot ? "Сохранение..." : "Сделать скриншот"}
             </button>
           </motion.div>
         </>

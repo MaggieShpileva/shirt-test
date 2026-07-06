@@ -1,0 +1,223 @@
+{
+  "asset": {
+    "generator": "Khronos glTF Blender I/O v4.4.56",
+    "version": "2.0"
+  },
+  "extensionsUsed": [
+    "KHR_texture_transform",
+    "KHR_materials_specular",
+    "KHR_materials_sheen"
+  ],
+  "extensionsRequired": [
+    "KHR_texture_transform"
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "sphere_gltf"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularTexture": {
+            "extensions": {
+              "KHR_texture_transform": {
+                "scale": [
+                  1.0011104345321655,
+                  1
+                ]
+              }
+            },
+            "index": 0
+          }
+        },
+        "KHR_materials_sheen": {
+          "sheenColorFactor": [
+            1,
+            1,
+            1
+          ],
+          "sheenRoughnessFactor": 0.5
+        }
+      },
+      "name": "ribbed_corduroy",
+      "normalTexture": {
+        "extensions": {
+          "KHR_texture_transform": {
+            "scale": [
+              1.0011104345321655,
+              1
+            ]
+          }
+        },
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "extensions": {
+            "KHR_texture_transform": {
+              "scale": [
+                1.0011104345321655,
+                1
+              ]
+            }
+          },
+          "index": 2
+        },
+        "metallicRoughnessTexture": {
+          "extensions": {
+            "KHR_texture_transform": {
+              "scale": [
+                1.0011104345321655,
+                1
+              ]
+            }
+          },
+          "index": 3
+        }
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Sphere.001",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    },
+    {
+      "sampler": 0,
+      "source": 2
+    },
+    {
+      "sampler": 0,
+      "source": 3
+    }
+  ],
+  "images": [
+    {
+      "mimeType": "image/jpeg",
+      "name": "ribbed_corduroy_spec_ior",
+      "uri": "textures/ribbed_corduroy_spec_ior_4k.jpg"
+    },
+    {
+      "mimeType": "image/jpeg",
+      "name": "ribbed_corduroy_nor_gl",
+      "uri": "textures/ribbed_corduroy_nor_gl_4k.jpg"
+    },
+    {
+      "mimeType": "image/jpeg",
+      "name": "ribbed_corduroy_diff",
+      "uri": "textures/ribbed_corduroy_diff_4k.jpg"
+    },
+    {
+      "mimeType": "image/jpeg",
+      "name": "ribbed_corduroy_metal-ribbed_corduroy_rough",
+      "uri": "textures/ribbed_corduroy_arm_4k.jpg"
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 53838,
+      "max": [
+        0.13339217007160187,
+        0.13353562355041504,
+        0.13340535759925842
+      ],
+      "min": [
+        -0.13339219987392426,
+        -0.1334649920463562,
+        -0.13340507447719574
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 53838,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 53838,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5123,
+      "count": 322170,
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 646056,
+      "byteOffset": 0,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 646056,
+      "byteOffset": 646056,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 430704,
+      "byteOffset": 1292112,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 644340,
+      "byteOffset": 1722816,
+      "target": 34963
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 2367156,
+      "uri": "ribbed_corduroy.bin"
+    }
+  ]
+}

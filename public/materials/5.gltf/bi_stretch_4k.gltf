@@ -1,0 +1,223 @@
+{
+  "asset": {
+    "generator": "Khronos glTF Blender I/O v4.4.56",
+    "version": "2.0"
+  },
+  "extensionsUsed": [
+    "KHR_texture_transform",
+    "KHR_materials_specular",
+    "KHR_materials_sheen"
+  ],
+  "extensionsRequired": [
+    "KHR_texture_transform"
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "sphere_gltf"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularTexture": {
+            "extensions": {
+              "KHR_texture_transform": {
+                "scale": [
+                  0.9993782639503479,
+                  1
+                ]
+              }
+            },
+            "index": 0
+          }
+        },
+        "KHR_materials_sheen": {
+          "sheenColorFactor": [
+            1,
+            0.770214855670929,
+            0.4688774347305298
+          ],
+          "sheenRoughnessFactor": 0.7801932096481323
+        }
+      },
+      "name": "bi_stretch",
+      "normalTexture": {
+        "extensions": {
+          "KHR_texture_transform": {
+            "scale": [
+              0.9993782639503479,
+              1
+            ]
+          }
+        },
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "extensions": {
+            "KHR_texture_transform": {
+              "scale": [
+                0.9993782639503479,
+                1
+              ]
+            }
+          },
+          "index": 2
+        },
+        "metallicRoughnessTexture": {
+          "extensions": {
+            "KHR_texture_transform": {
+              "scale": [
+                0.9993782639503479,
+                1
+              ]
+            }
+          },
+          "index": 3
+        }
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Sphere.001",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    },
+    {
+      "sampler": 0,
+      "source": 2
+    },
+    {
+      "sampler": 0,
+      "source": 3
+    }
+  ],
+  "images": [
+    {
+      "mimeType": "image/jpeg",
+      "name": "bi_stretch_spec_ior",
+      "uri": "textures/bi_stretch_spec_ior_4k.jpg"
+    },
+    {
+      "mimeType": "image/jpeg",
+      "name": "bi_stretch_nor_gl",
+      "uri": "textures/bi_stretch_nor_gl_4k.jpg"
+    },
+    {
+      "mimeType": "image/jpeg",
+      "name": "bi_stretch_diff",
+      "uri": "textures/bi_stretch_diff_4k.jpg"
+    },
+    {
+      "mimeType": "image/jpeg",
+      "name": "bi_stretch_metal-bi_stretch_rough",
+      "uri": "textures/bi_stretch_arm_4k.jpg"
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 53949,
+      "max": [
+        0.13222907483577728,
+        0.13224776089191437,
+        0.13222837448120117
+      ],
+      "min": [
+        -0.13222908973693848,
+        -0.13227015733718872,
+        -0.13222873210906982
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 53949,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 53949,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5123,
+      "count": 322170,
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 647388,
+      "byteOffset": 0,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 647388,
+      "byteOffset": 647388,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 431592,
+      "byteOffset": 1294776,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 644340,
+      "byteOffset": 1726368,
+      "target": 34963
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 2370708,
+      "uri": "bi_stretch.bin"
+    }
+  ]
+}

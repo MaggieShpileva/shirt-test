@@ -20,6 +20,28 @@ const ColorPicker = () => {
         <button type="button" onClick={() => (state.clearSignal += 1)} className="w-full mt-3 py-2 px-3 rounded-md text-sm font-semibold bg-red-50 text-red-600 hover:bg-red-100 transition-colors">
           Очистить рисунок
         </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            state.downloadUvIncludeTexture = true;
+            state.downloadUvSignal += 1;
+          }}
+          className="w-full mt-2 py-2 px-3 rounded-md text-sm font-semibold bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+        >
+          Скачать развёртку
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            state.downloadUvIncludeTexture = false;
+            state.downloadUvSignal += 1;
+          }}
+          className="w-full mt-2 py-2 px-3 rounded-md text-sm font-semibold bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors"
+        >
+          Скачать без текстуры
+        </button>
       </div>
     </div>
   );

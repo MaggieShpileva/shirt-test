@@ -29,7 +29,13 @@ const CameraRig = ({ children }) => {
         easing.damp3(state.camera.position, targetPosition, 0.25, delta)
 
         // set the model rotation smoothly (отключаем при рисовании)
-        if (!snap.isPainting) {
+        if (snap.isScreenshotting) {
+            group.current.rotation.set(
+                snap.modelRotation[0],
+                snap.modelRotation[1],
+                0
+            );
+        } else if (!snap.isPainting) {
             easing.dampE(
                 group.current.rotation,
                 [snap.modelRotation[0], snap.modelRotation[1], 0],

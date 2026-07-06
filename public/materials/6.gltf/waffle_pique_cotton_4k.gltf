@@ -1,0 +1,223 @@
+{
+  "asset": {
+    "generator": "Khronos glTF Blender I/O v4.4.56",
+    "version": "2.0"
+  },
+  "extensionsUsed": [
+    "KHR_texture_transform",
+    "KHR_materials_specular",
+    "KHR_materials_sheen"
+  ],
+  "extensionsRequired": [
+    "KHR_texture_transform"
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "sphere_gltf"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularTexture": {
+            "extensions": {
+              "KHR_texture_transform": {
+                "scale": [
+                  0.98580002784729,
+                  1
+                ]
+              }
+            },
+            "index": 0
+          }
+        },
+        "KHR_materials_sheen": {
+          "sheenColorFactor": [
+            1,
+            0.7439786791801453,
+            0.19999998807907104
+          ],
+          "sheenRoughnessFactor": 0.5
+        }
+      },
+      "name": "waffle_pique_cotton",
+      "normalTexture": {
+        "extensions": {
+          "KHR_texture_transform": {
+            "scale": [
+              0.98580002784729,
+              1
+            ]
+          }
+        },
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "extensions": {
+            "KHR_texture_transform": {
+              "scale": [
+                0.98580002784729,
+                1
+              ]
+            }
+          },
+          "index": 2
+        },
+        "metallicRoughnessTexture": {
+          "extensions": {
+            "KHR_texture_transform": {
+              "scale": [
+                0.98580002784729,
+                1
+              ]
+            }
+          },
+          "index": 3
+        }
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Sphere.001",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    },
+    {
+      "sampler": 0,
+      "source": 2
+    },
+    {
+      "sampler": 0,
+      "source": 3
+    }
+  ],
+  "images": [
+    {
+      "mimeType": "image/jpeg",
+      "name": "waffle_pique_cotton_spec_ior",
+      "uri": "textures/waffle_pique_cotton_spec_ior_4k.jpg"
+    },
+    {
+      "mimeType": "image/jpeg",
+      "name": "waffle_pique_cotton_nor_gl",
+      "uri": "textures/waffle_pique_cotton_nor_gl_4k.jpg"
+    },
+    {
+      "mimeType": "image/jpeg",
+      "name": "waffle_pique_cotton_diff",
+      "uri": "textures/waffle_pique_cotton_diff_4k.jpg"
+    },
+    {
+      "mimeType": "image/jpeg",
+      "name": "waffle_pique_cotton_metal-waffle_pique_cotton_rough",
+      "uri": "textures/waffle_pique_cotton_arm_4k.jpg"
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 53885,
+      "max": [
+        0.13885734975337982,
+        0.13863320648670197,
+        0.13884638249874115
+      ],
+      "min": [
+        -0.1388574093580246,
+        -0.13866733014583588,
+        -0.1388462334871292
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 53885,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 53885,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5123,
+      "count": 322170,
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 646620,
+      "byteOffset": 0,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 646620,
+      "byteOffset": 646620,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 431080,
+      "byteOffset": 1293240,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 644340,
+      "byteOffset": 1724320,
+      "target": 34963
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 2368660,
+      "uri": "waffle_pique_cotton.bin"
+    }
+  ]
+}
