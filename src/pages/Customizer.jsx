@@ -2,56 +2,57 @@ import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useSnapshot } from "valtio";
 
-import config from "../config/config";
 import state from "../store";
-import { download } from "../assets";
-import { downloadCanvasToImage, reader, takeFrontBackScreenshots } from "../config/helpers";
-import { EditorTabs, FilterTabs, DecalTypes } from "../config/constants";
-import { fadeAnimation, slideAnimation } from "../config/motion";
-import { AIPicker, ColorPicker, CustomButton, FilePicker, ImageOverlayPicker, LogoColorPicker, BackNumberColorPicker, MaterialPicker, Tab, VariantGallery } from "../components";
+import { reader, takeFrontBackScreenshots } from "../config/helpers";
+import { EditorTabs, DecalTypes } from "../config/constants";
+import { slideAnimation } from "../config/motion";
+import { AIPicker, ColorPicker, FilePicker, ImageOverlayPicker, BackNumberColorPicker, MaterialPicker, Tab, TeamPalettePicker, VariantGallery } from "../components";
 import { preloadMaterialPreviews } from "../config/preloadMaterials";
 
 const Customizer = () => {
   const snap = useSnapshot(state);
 
   const [file, setFile] = useState("");
-
   const [prompt, setPrompt] = useState("");
   const [generatingImg, setGeneratingImg] = useState(false);
   const [isTakingScreenshot, setIsTakingScreenshot] = useState(false);
-
-  const handleDownloadGlb = () => {
-    if (snap.isExportingGlb) return;
-    state.downloadGlbSignal += 1;
-  };
-
   const [activeEditorTab, setActiveEditorTab] = useState("");
   const [activeFilterTab, setActiveFilterTab] = useState({
     logoShirt: true,
     stylishShirt: false,
   });
 
+  const handleDownloadGlb = () => {
+    if (snap.isExportingGlb) return;
+    state.downloadGlbSignal += 1;
+  };
+
   useEffect(() => {
     preloadMaterialPreviews();
   }, []);
 
-  // show tab content depending on the activeTab
-  const generateTabContent = () => {
-    switch (activeEditorTab) {
+  const closeEditorTab = () => setActiveEditorTab("");
+
+  const toggleEditorTab = (name) => {
+    setActiveEditorTab((prev) => (prev === name ? "" : name));
+  };
+
+  const generateTabContent = (tabName) => {
+    switch (tabName) {
       case "colorpicker":
-        return <ColorPicker />;
+        return <ColorPicker onClose={closeEditorTab} />;
       case "materialpicker":
-        return <MaterialPicker />;
+        return <MaterialPicker onClose={closeEditorTab} />;
       case "imageoverlay":
-        return <ImageOverlayPicker />;
-      case "logocolorpicker":
-        return <LogoColorPicker />;
+        return <ImageOverlayPicker onClose={closeEditorTab} />;
       case "backnumberpicker":
-        return <BackNumberColorPicker />;
+        return <BackNumberColorPicker onClose={closeEditorTab} />;
       case "filepicker":
         return <FilePicker file={file} setFile={setFile} readFile={readFile} />;
       case "aipicker":
         return <AIPicker prompt={prompt} setPrompt={setPrompt} generatingImg={generatingImg} handleSubmit={handleSubmit} />;
+      case "variantgallery":
+        return <VariantGallery />;
       default:
         return null;
     }
@@ -108,14 +109,10 @@ const Customizer = () => {
         break;
     }
 
-    // after setting the state, activeFilterTab is updated
-
-    setActiveFilterTab((prevState) => {
-      return {
-        ...prevState,
-        [tabName]: !prevState[tabName],
-      };
-    });
+    setActiveFilterTab((prevState) => ({
+      ...prevState,
+      [tabName]: !prevState[tabName],
+    }));
   };
 
   const readFile = (type) => {
@@ -135,64 +132,66 @@ const Customizer = () => {
     }
   };
 
+  const showPanelBackdrop = Boolean(activeEditorTab);
+
   return (
     <AnimatePresence>
       {!snap.intro && (
         <>
-          <motion.div key="custom" className="absolute top-0 left-0 z-10" {...slideAnimation("left")}>
-            <div className="flex items-center min-h-screen">
-              <div className="editortabs-container tabs">
-                {EditorTabs.map((tab) => (
+          {showPanelBackdrop && <button type="button" className="picker-backdrop md:hidden" aria-label="Закрыть панель" onClick={closeEditorTab} />}
+
+          <motion.div key="custom" className="editortabs-shell" {...slideAnimation("left")}>
+            <div className="editortabs-container tabs">
+              {EditorTabs.map((tab) => (
+                <div key={tab.name} className={`editortab-item ${activeEditorTab === tab.name ? "is-open" : ""}`}>
                   <Tab
-                    key={tab.name}
                     tab={tab}
                     isActiveTab={activeEditorTab === tab.name}
-                    handleClick={() => setActiveEditorTab((prev) => (prev === tab.name ? "" : tab.name))}
+                    handleClick={() => toggleEditorTab(tab.name)}
                     onMouseEnter={tab.name === "materialpicker" || tab.name === "variantgallery" ? preloadMaterialPreviews : undefined}
                   />
-                ))}
-
-                {generateTabContent()}
-              </div>
+                  {activeEditorTab === tab.name && generateTabContent(tab.name)}
+                </div>
+              ))}
             </div>
           </motion.div>
 
-          {activeEditorTab === "variantgallery" && <VariantGallery />}
+          <motion.div className="bottom-dock" {...slideAnimation("up")}>
+            <TeamPalettePicker />
 
-          <motion.div className="filtertabs-container" {...slideAnimation("up")}>
-            <button
-              type="button"
-              onClick={() => (state.isPainting = !state.isPainting)}
-              className={`whitespace-nowrap py-2.5 px-5 rounded-full text-[10px] font-semibold transition-colors glassmorphism bg-blue-500 ${snap.isPainting ? "bg-blue-500" : "text-gray-700"}`}
-            >
-              {snap.isPainting ? "Рисование: ВКЛ" : "Рисование: ВЫКЛ"}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                state.downloadUvIncludeTexture = true;
-                state.downloadUvSignal += 1;
-              }}
-              className="whitespace-nowrap py-2.5 px-5 rounded-full text-[10px] font-semibold transition-colors glassmorphism text-gray-700"
-            >
-              Скачать развёртку
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                state.downloadUvIncludeTexture = false;
-                state.downloadUvSignal += 1;
-              }}
-              className="whitespace-nowrap py-2.5 px-5 rounded-full text-[10px] font-semibold transition-colors glassmorphism text-gray-700"
-            >
-              Скачать без текстуры
-            </button>
-            <button type="button" onClick={handleScreenshot} disabled={isTakingScreenshot} className="whitespace-nowrap py-2.5 px-5 rounded-full text-[10px] font-semibold transition-colors glassmorphism text-gray-700 disabled:opacity-50">
-              {isTakingScreenshot ? "Сохранение..." : "Сделать скриншот"}
-            </button>
-            <button type="button" onClick={handleDownloadGlb} disabled={snap.isExportingGlb} className="whitespace-nowrap py-2.5 px-5 rounded-full text-[10px] font-semibold transition-colors glassmorphism text-gray-700 disabled:opacity-50">
-              {snap.isExportingGlb ? "Экспорт..." : "Скачать 3D-модель"}
-            </button>
+            <div className="filtertabs-container">
+              <button type="button" onClick={() => (state.isPainting = !state.isPainting)} className={`action-chip ${snap.isPainting ? "action-chip-active" : ""}`} data-tooltip={snap.isPainting ? "Выключить рисование" : "Включить рисование кистью"}>
+                {snap.isPainting ? "Кисть: ВКЛ" : "Кисть"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  state.downloadUvIncludeTexture = true;
+                  state.downloadUvSignal += 1;
+                }}
+                className="action-chip"
+                data-tooltip="Скачать UV-развёртку с текстурой"
+              >
+                UV
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  state.downloadUvIncludeTexture = false;
+                  state.downloadUvSignal += 1;
+                }}
+                className="action-chip"
+                data-tooltip="Скачать UV-развёртку без текстуры"
+              >
+                UV−
+              </button>
+              <button type="button" onClick={handleScreenshot} disabled={isTakingScreenshot} className="action-chip" data-tooltip="Сделать скриншот спереди и сзади">
+                {isTakingScreenshot ? "..." : "Скрин"}
+              </button>
+              <button type="button" onClick={handleDownloadGlb} disabled={snap.isExportingGlb} className="action-chip" data-tooltip="Скачать 3D-модель (GLB)">
+                {snap.isExportingGlb ? "..." : "3D"}
+              </button>
+            </div>
           </motion.div>
         </>
       )}

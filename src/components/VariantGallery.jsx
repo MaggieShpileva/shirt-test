@@ -1,11 +1,9 @@
 import React, { useRef, useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { useSnapshot } from "valtio";
 
 import state from "../store";
 import { SHIRT_VARIANTS } from "../config/generateVariants";
 import { preloadMaterialPreviews } from "../config/preloadMaterials";
-import { slideAnimation } from "../config/motion";
 import VariantMiniCanvas from "./VariantMiniCanvas";
 
 const ITEM_HEIGHT = 84;
@@ -20,22 +18,14 @@ const VariantCard = ({ variant, isActive, onSelect, scrollRootRef }) => {
     const root = scrollRootRef.current;
     if (!node) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsVisible(entry.isIntersecting),
-      { root, threshold: 0.15 }
-    );
+    const observer = new IntersectionObserver(([entry]) => setIsVisible(entry.isIntersecting), { root, threshold: 0.15 });
 
     observer.observe(node);
     return () => observer.disconnect();
   }, [scrollRootRef]);
 
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={`variant-card ${isActive ? "variant-card-active" : ""}`}
-      title={`${variant.materialName} · ${variant.color}`}
-    >
+    <button type="button" onClick={onSelect} className={`variant-card ${isActive ? "variant-card-active" : ""}`} title={`${variant.materialName} · ${variant.color}`}>
       <div ref={previewRef} className="variant-card-preview">
         {isVisible && <VariantMiniCanvas color={variant.color} materialPath={variant.materialPath} />}
       </div>
@@ -76,46 +66,26 @@ const VariantGallery = () => {
     state.color = variant.color;
   };
 
-  const isVariantActive = (variant) =>
-    snap.shirtMaterial === variant.materialPath &&
-    snap.fabricColor.toLowerCase() === variant.color.toLowerCase();
+  const isVariantActive = (variant) => snap.shirtMaterial === variant.materialPath && snap.fabricColor.toLowerCase() === variant.color.toLowerCase();
 
   return (
-    <motion.div key="variants" className="variant-gallery" {...slideAnimation("right")}>
-      <p className="variant-gallery-title">Варианты</p>
+    <div className="variant-gallery">
+      <p className="variant-gallery-title">Готовые варианты</p>
 
-      <button
-        type="button"
-        className="variant-gallery-arrow"
-        onClick={() => scrollByItems(-1)}
-        disabled={!canScrollUp}
-        aria-label="Прокрутить вверх"
-      >
+      <button type="button" className="variant-gallery-arrow" onClick={() => scrollByItems(-1)} disabled={!canScrollUp} aria-label="Прокрутить вверх">
         ▲
       </button>
 
       <div ref={listRef} className="variant-gallery-list" onScroll={updateScrollState}>
         {SHIRT_VARIANTS.map((variant) => (
-          <VariantCard
-            key={variant.id}
-            variant={variant}
-            isActive={isVariantActive(variant)}
-            onSelect={() => applyVariant(variant)}
-            scrollRootRef={listRef}
-          />
+          <VariantCard key={variant.id} variant={variant} isActive={isVariantActive(variant)} onSelect={() => applyVariant(variant)} scrollRootRef={listRef} />
         ))}
       </div>
 
-      <button
-        type="button"
-        className="variant-gallery-arrow"
-        onClick={() => scrollByItems(1)}
-        disabled={!canScrollDown}
-        aria-label="Прокрутить вниз"
-      >
+      <button type="button" className="variant-gallery-arrow" onClick={() => scrollByItems(1)} disabled={!canScrollDown} aria-label="Прокрутить вниз">
         ▼
       </button>
-    </motion.div>
+    </div>
   );
 };
 

@@ -4,7 +4,7 @@ import { useSnapshot } from "valtio";
 import state, { DEFAULT_OVERLAY_SCALE } from "../store";
 import { reader } from "../config/helpers";
 
-const ImageOverlayPicker = () => {
+const ImageOverlayPicker = ({ onClose }) => {
   const snap = useSnapshot(state);
   const inputRef = useRef(null);
 
@@ -27,8 +27,13 @@ const ImageOverlayPicker = () => {
   };
 
   return (
-    <div className="absolute left-full ml-3 glassmorphism p-3 w-[240px] rounded-md">
-      <p className="text-xs font-semibold text-gray-700 mb-3">Накладка на футболку</p>
+    <div className="picker-panel relative">
+      {onClose && (
+        <button type="button" className="picker-close" onClick={onClose} aria-label="Закрыть">
+          ×
+        </button>
+      )}
+      <p className="text-xs font-semibold text-gray-700 mb-3 pr-6">Накладка на футболку</p>
 
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
 

@@ -1,17 +1,36 @@
 import React from "react";
-import { SketchPicker } from "react-color";
 import { useSnapshot } from "valtio";
 
 import state from "../store";
+import { FootballTeams, getTeamPaletteList } from "../config/constants";
+import PresetColorGrid from "./PresetColorGrid";
 
-const ColorPicker = () => {
+const ColorPicker = ({ onClose }) => {
   const snap = useSnapshot(state);
+  const activeTeam = FootballTeams.find((team) => team.id === snap.selectedTeamId);
+  const presetColors = activeTeam ? getTeamPaletteList(activeTeam) : [];
 
   return (
-    <div className="absolute left-full ml-3 flex flex-col gap-3">
-      <SketchPicker color={snap.color} disableAlpha presetColors={["#ccc", "#EFBD4E", "#80C670", "#726DE8", "#353934", "#2CCCE4", "#ff8a65", "#7098DA", "#C19277", "#FF96AD", "#512314", "#5F123D"]} onChange={(color) => (state.color = color.hex)} />
+    <div className="picker-panel-stack">
+      <div className="picker-panel relative">
+        {onClose && (
+          <button type="button" className="picker-close" onClick={onClose} aria-label="Закрыть">
+            ×
+          </button>
+        )}
+        <p className="text-xs font-semibold text-gray-700 mb-2 pr-6">Цвет кисти</p>
 
-      <div className="bg-white rounded-lg p-3 shadow-md w-[220px]">
+        {activeTeam ? (
+          <>
+            <p className="text-[10px] text-gray-500 mb-2">Палитра {activeTeam.name}</p>
+            <PresetColorGrid colors={presetColors} value={snap.color} onChange={(hex) => (state.color = hex)} />
+          </>
+        ) : (
+          <p className="text-xs text-gray-500">Сначала выберите команду внизу</p>
+        )}
+      </div>
+
+      <div className="picker-panel bg-white/80">
         <div>
           <label className="text-xs text-gray-600 font-medium">Размер кисти: {snap.brushSize}px</label>
           <input type="range" min={5} max={60} value={snap.brushSize} onChange={(e) => (state.brushSize = Number(e.target.value))} className="w-full mt-1 accent-blue-500" />

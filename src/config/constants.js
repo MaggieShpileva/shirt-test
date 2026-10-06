@@ -77,10 +77,6 @@ export const EditorTabs = [
     icon: fileIcon,
   },
   {
-    name: "logocolorpicker",
-    icon: logoShirt,
-  },
-  {
     name: "backnumberpicker",
     icon: numberIcon,
   },
@@ -137,3 +133,73 @@ export const BackNumberPlacement = {
   uvOffset: { x: 0, y: 0 },
   uvWidth: 0.25,
 };
+
+/**
+ * Палитры футбольных клубов (только пресеты, без свободного RGB).
+ * logoPrimary / logoSecondary фиксируются при выборе команды и не кастомизируются.
+ */
+export const FootballTeams = [
+  {
+    id: "barcelona",
+    name: "Barcelona",
+    colors: {
+      fabric: "#A50044",
+      logoPrimary: "#004D98",
+      logoSecondary: "#EDBB00",
+      backNumber: "#FFFFFF",
+      brush: "#97C1E7",
+    },
+  },
+  {
+    id: "real-madrid",
+    name: "Real Madrid",
+    colors: {
+      fabric: "#FFFFFF",
+      logoPrimary: "#FEBE10",
+      logoSecondary: "#00529F",
+      backNumber: "#00529F",
+      brush: "#EE334E",
+    },
+  },
+  {
+    id: "manchester-united",
+    name: "Man United",
+    colors: {
+      fabric: "#DA291C",
+      logoPrimary: "#FBE122",
+      logoSecondary: "#000000",
+      backNumber: "#FFFFFF",
+      brush: "#FBE122",
+    },
+  },
+  {
+    id: "chelsea",
+    name: "Chelsea",
+    colors: {
+      fabric: "#034694",
+      logoPrimary: "#DBA111",
+      logoSecondary: "#FFFFFF",
+      backNumber: "#FFFFFF",
+      brush: "#ED1C24",
+    },
+  },
+  {
+    id: "juventus",
+    name: "Juventus",
+    colors: {
+      fabric: "#1A1A1A",
+      logoPrimary: "#FFFFFF",
+      logoSecondary: "#C8A35F",
+      backNumber: "#FFFFFF",
+      brush: "#C8A35F",
+    },
+  },
+];
+
+export const getTeamPaletteList = (team) => [
+  team.colors.fabric,
+  team.colors.logoPrimary,
+  team.colors.logoSecondary,
+  team.colors.backNumber,
+  team.colors.brush,
+];

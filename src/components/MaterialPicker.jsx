@@ -2,7 +2,7 @@ import React, { useSyncExternalStore } from "react";
 import { useSnapshot } from "valtio";
 
 import state, { DEFAULT_FABRIC_COLOR, FABRIC_COLOR_WITH_TEXTURE } from "../store";
-import { ShirtMaterials } from "../config/constants";
+import { FootballTeams, ShirtMaterials } from "../config/constants";
 import { getMaterialThumbnailUrl, subscribeMaterialPreviews } from "../config/preloadMaterials";
 
 const MaterialThumb = ({ material, isSelected }) => {
@@ -33,12 +33,17 @@ const MaterialThumb = ({ material, isSelected }) => {
   );
 };
 
-const MaterialPicker = () => {
+const MaterialPicker = ({ onClose }) => {
   const snap = useSnapshot(state);
 
   return (
-    <div className="absolute left-full ml-3 glassmorphism p-3 w-[240px] rounded-md max-h-[420px] overflow-y-auto">
-      <p className="text-xs font-semibold text-gray-700 mb-3">Материал</p>
+    <div className="picker-panel relative">
+      {onClose && (
+        <button type="button" className="picker-close" onClick={onClose} aria-label="Закрыть">
+          ×
+        </button>
+      )}
+      <p className="text-xs font-semibold text-gray-700 mb-3 pr-6">Материал</p>
 
       <div className="grid grid-cols-3 gap-2">
         {ShirtMaterials.map((material) => (
@@ -55,7 +60,8 @@ const MaterialPicker = () => {
           type="button"
           onClick={() => {
             state.shirtMaterial = null;
-            state.fabricColor = DEFAULT_FABRIC_COLOR;
+            const active = FootballTeams.find((t) => t.id === state.selectedTeamId);
+            state.fabricColor = active?.colors.fabric ?? DEFAULT_FABRIC_COLOR;
           }}
           className="w-full mt-3 py-2 px-3 rounded-md text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
         >

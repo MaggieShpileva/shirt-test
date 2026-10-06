@@ -1,22 +1,27 @@
 import { proxy } from "valtio";
 
+import { FootballTeams } from "../config/constants";
+
 export const DEFAULT_FABRIC_COLOR = "#0C1520";
 export const FABRIC_COLOR_WITH_TEXTURE = "#FFFFFF";
 export const DEFAULT_OVERLAY_SCALE = 0.4;
 
+const defaultTeam = FootballTeams[0];
+
 const state = proxy({
   intro: false,
-  color: "#EFBD48",
+  color: defaultTeam.colors.brush,
+  selectedTeamId: defaultTeam.id,
   isLogoTexture: false,
   isFullTexture: false,
   logoDecal: "/logo.svg",
   fullDecal: "./threejs.png",
   shirtMaterial: null,
-  fabricColor: DEFAULT_FABRIC_COLOR,
-  logoColorPrimary: "#00C7B1",
-  logoColorSecondary: "#FFFFFF",
+  fabricColor: defaultTeam.colors.fabric,
+  logoColorPrimary: defaultTeam.colors.logoPrimary,
+  logoColorSecondary: defaultTeam.colors.logoSecondary,
   backNumberText: "01",
-  backNumberColor: "#FFFFFF",
+  backNumberColor: defaultTeam.colors.backNumber,
   // Режим рисования кистью по модели
   isPainting: false,
   brushSize: 25,
