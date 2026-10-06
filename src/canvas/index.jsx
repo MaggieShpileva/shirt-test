@@ -1,20 +1,38 @@
+import { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Environment, Center } from "@react-three/drei";
+import { Environment, Center, useGLTF } from "@react-three/drei";
 
 import Shirt from "./Shirt";
 import CameraRig from "./CameraRig";
 
+// Ранний старт загрузки модели, не дожидаясь материалов/HDR
+useGLTF.preload("/shirt_baked.glb");
+
 const CanvasModel = () => {
   return (
-    <Canvas shadows camera={{ position: [0, 0, 0], fov: 22 }} gl={{ preserveDrawingBuffer: true }} className="w-full max-w-full h-full transition-all ease-in touch-none" style={{ touchAction: "none" }}>
+    <Canvas
+      shadows
+      camera={{ position: [0, 0, 0], fov: 22 }}
+      gl={{ preserveDrawingBuffer: true, antialias: true, powerPreference: "high-performance" }}
+      className="w-full max-w-full h-full transition-all ease-in touch-none"
+      style={{ touchAction: "none" }}
+    >
+      <ambientLight intensity={0.55} />
       <directionalLight position={[2, 2, 3]} intensity={1} />
-      <Environment preset="city" />
+      <directionalLight position={[-2, 1, -1]} intensity={0.35} />
 
-      <CameraRig>
-        <Center>
-          <Shirt />
-        </Center>
-      </CameraRig>
+      {/* HDR не блокирует появление модели */}
+      <Suspense fallback={null}>
+        <Environment preset="city" />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <CameraRig>
+          <Center>
+            <Shirt />
+          </Center>
+        </CameraRig>
+      </Suspense>
     </Canvas>
   );
 };

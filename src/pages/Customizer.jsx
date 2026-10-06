@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useSnapshot } from "valtio";
 
@@ -27,13 +27,12 @@ const Customizer = () => {
     state.downloadGlbSignal += 1;
   };
 
-  useEffect(() => {
-    preloadMaterialPreviews();
-  }, []);
-
   const closeEditorTab = () => setActiveEditorTab("");
 
   const toggleEditorTab = (name) => {
+    if (name === "materialpicker" || name === "variantgallery") {
+      preloadMaterialPreviews();
+    }
     setActiveEditorTab((prev) => (prev === name ? "" : name));
   };
 

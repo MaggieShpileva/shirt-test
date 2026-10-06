@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useMemo, useLayoutEffect, useState } from "react";
+import React, { Suspense, useRef, useEffect, useMemo, useLayoutEffect, useState } from "react";
 import { useSnapshot } from "valtio";
 import { useThree } from "@react-three/fiber";
 import { Decal, useGLTF, useTexture } from "@react-three/drei";
@@ -149,6 +149,12 @@ const getBackNumberUv = () => BackNumberPlacement.fallbackUv;
 
 const isImageReady = (image) => Boolean(image?.complete && image.naturalWidth > 0);
 
+const FullTextureDecal = () => {
+  const snap = useSnapshot(state);
+  const fullTexture = useTexture(snap.fullDecal);
+  return <Decal position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1} map={fullTexture} />;
+};
+
 const Shirt = () => {
   const snap = useSnapshot(state);
   const { nodes, materials } = useGLTF("/shirt_baked.glb");
@@ -163,7 +169,6 @@ const Shirt = () => {
   const [shirtMat, setShirtMat] = useState(null);
 
   const logoTexture = useTexture(snap.logoDecal);
-  const fullTexture = useTexture(snap.fullDecal);
 
   const meshRef = useRef();
   const baseCanvasRef = useRef(null);
@@ -932,7 +937,11 @@ const Shirt = () => {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
       >
-        {snap.isFullTexture && <Decal position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1} map={fullTexture} />}
+        {snap.isFullTexture && (
+          <Suspense fallback={null}>
+            <FullTextureDecal />
+          </Suspense>
+        )}
 
         {snap.isLogoTexture && <Decal position={LogoDecalTransform.position} rotation={LogoDecalTransform.rotation} scale={LogoDecalTransform.scale} map={logoTexture} transparent anisotropy={16} depthTest={false} depthWrite />}
       </mesh>
