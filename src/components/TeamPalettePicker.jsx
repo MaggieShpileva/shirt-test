@@ -31,15 +31,7 @@ const TeamPalettePicker = () => {
           const palette = getTeamPaletteList(team);
 
           return (
-            <button
-              key={team.id}
-              type="button"
-              role="option"
-              aria-selected={isActive}
-              onClick={() => applyTeamColors(team)}
-              className={`team-palette-card ${isActive ? "team-palette-card-active" : ""}`}
-              title={team.name}
-            >
+            <button key={team.id} type="button" role="option" aria-selected={isActive} onClick={() => applyTeamColors(team)} className={`team-palette-card ${isActive ? "team-palette-card-active" : ""}`} title={team.name}>
               <span className="team-palette-swatches">
                 {palette.slice(0, 3).map((hex, index) => (
                   <span key={`${team.id}-${index}`} className="team-palette-swatch" style={{ backgroundColor: hex }} />
@@ -50,24 +42,6 @@ const TeamPalettePicker = () => {
           );
         })}
       </div>
-
-      {activeTeam && (
-        <div className="team-palette-roles" aria-label="Цвета команды">
-          {COLOR_ROLES.map((role) => (
-            <button
-              key={role.key}
-              type="button"
-              className="team-palette-role"
-              title={`${role.label}: ${activeTeam.colors[role.key]}`}
-              onClick={() => {
-                state[role.stateKey] = activeTeam.colors[role.key];
-              }}
-            >
-              <span className="team-palette-role-swatch" style={{ backgroundColor: activeTeam.colors[role.key] }} />
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 };

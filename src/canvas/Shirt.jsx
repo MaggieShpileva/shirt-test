@@ -122,11 +122,9 @@ const drawPlacementGraphic = (ctx, clearLayer, image, uv, placement, defaultAspe
   return true;
 };
 
-const drawChestLogo = (ctx, image, uv) =>
-  drawPlacementGraphic(ctx, clearLogoLayer, image, uv, ChestLogoPlacement, 50 / 240);
+const drawChestLogo = (ctx, image, uv) => drawPlacementGraphic(ctx, clearLogoLayer, image, uv, ChestLogoPlacement, 50 / 240);
 
-const drawBackNumber = (ctx, image, uv) =>
-  drawPlacementGraphic(ctx, clearBackNumberLayer, image, uv, BackNumberPlacement, 80 / 120);
+const drawBackNumber = (ctx, image, uv) => drawPlacementGraphic(ctx, clearBackNumberLayer, image, uv, BackNumberPlacement, 80 / 120);
 
 const drawOverlayImage = (ctx, image, scale, offsetX, offsetY) => {
   if (!ctx || !image || !isImageReady(image)) return false;
@@ -187,6 +185,8 @@ const Shirt = () => {
   const isDrawingRef = useRef(false);
   const isRotatingRef = useRef(false);
   const lastPointerRef = useRef({ x: 0, y: 0 });
+  const rotatePointerIdRef = useRef(null);
+  const rotateListenersRef = useRef(null);
   const lastUvRef = useRef(null);
   const clearSignalRef = useRef(snap.clearSignal);
   const downloadUvSignalRef = useRef(snap.downloadUvSignal);
@@ -223,8 +223,7 @@ const Shirt = () => {
   const raycaster = useMemo(() => new THREE.Raycaster(), []);
   const pointer = useMemo(() => new THREE.Vector2(), []);
 
-  const isOutputTextureReady = () =>
-    Boolean(baseCanvasRef.current && paintTextureRef.current && !paintTextureRef.current.disposed);
+  const isOutputTextureReady = () => Boolean(baseCanvasRef.current && paintTextureRef.current && !paintTextureRef.current.disposed);
 
   const bindOutputTexture = () => {
     const mat = shirtMatRef.current;
@@ -396,9 +395,7 @@ const Shirt = () => {
     const materialPath = shirtMaterialRef.current;
     const baseCtx = baseCtxRef.current;
     const overlayCtx = overlayCtxRef.current;
-    const cachedImage =
-      (materialPath && baseTextureCacheRef.current[materialPath]) ||
-      (materialPath && getMaterialPreview(materialPath));
+    const cachedImage = (materialPath && baseTextureCacheRef.current[materialPath]) || (materialPath && getMaterialPreview(materialPath));
     const hasFabricTexture = isImageReady(cachedImage);
 
     if (cachedImage && baseCtx) {
@@ -680,9 +677,7 @@ const Shirt = () => {
     }
 
     const materialPath = shirtMaterialRef.current;
-    const cachedImage =
-      (materialPath && baseTextureCacheRef.current[materialPath]) ||
-      (materialPath && getMaterialPreview(materialPath));
+    const cachedImage = (materialPath && baseTextureCacheRef.current[materialPath]) || (materialPath && getMaterialPreview(materialPath));
     const hasFabricTexture = isImageReady(cachedImage);
 
     if (cachedImage && baseCtx) {
@@ -839,6 +834,25 @@ const Shirt = () => {
     compositeLayers();
   };
 
+  const stopRotationDrag = () => {
+    const pointerId = rotatePointerIdRef.current;
+    const listeners = rotateListenersRef.current;
+    isRotatingRef.current = false;
+    rotatePointerIdRef.current = null;
+    rotateListenersRef.current = null;
+
+    if (listeners) {
+      gl.domElement.removeEventListener("pointermove", listeners.move);
+      gl.domElement.removeEventListener("pointerup", listeners.up);
+      gl.domElement.removeEventListener("pointercancel", listeners.up);
+    }
+    if (pointerId != null && gl.domElement.hasPointerCapture?.(pointerId)) {
+      gl.domElement.releasePointerCapture(pointerId);
+    }
+  };
+
+  useEffect(() => () => stopRotationDrag(), [gl]);
+
   const handlePointerDown = (event) => {
     const e = event.nativeEvent;
 
@@ -852,42 +866,58 @@ const Shirt = () => {
       return;
     }
 
+    event.stopPropagation();
+    stopRotationDrag();
+
     isRotatingRef.current = true;
+    rotatePointerIdRef.current = e.pointerId;
     lastPointerRef.current = { x: e.clientX, y: e.clientY };
+
+    const maxPitch = 0.25;
+    if (Math.abs(state.modelRotation[0]) > maxPitch) {
+      state.modelRotation[0] = Math.max(-maxPitch, Math.min(maxPitch, state.modelRotation[0]));
+    }
+
+    // Слушаем canvas, а не меш: при повороте курсор уходит с поверхности,
+    // и R3F onPointerLeave/Move на меше обрывают драг.
+    const onMove = (ev) => {
+      if (!isRotatingRef.current) return;
+      if (rotatePointerIdRef.current != null && ev.pointerId !== rotatePointerIdRef.current) return;
+
+      const deltaX = ev.clientX - lastPointerRef.current.x;
+      const deltaY = ev.clientY - lastPointerRef.current.y;
+      lastPointerRef.current = { x: ev.clientX, y: ev.clientY };
+
+      const yawSensitivity = 0.014;
+      const pitchSensitivity = 0.004;
+
+      state.modelRotation[1] += deltaX * yawSensitivity;
+      state.modelRotation[0] = Math.max(-maxPitch, Math.min(maxPitch, state.modelRotation[0] + deltaY * pitchSensitivity));
+    };
+
+    const onUp = (ev) => {
+      if (rotatePointerIdRef.current != null && ev.pointerId !== rotatePointerIdRef.current) return;
+      stopRotationDrag();
+    };
+
+    rotateListenersRef.current = { move: onMove, up: onUp };
+    gl.domElement.addEventListener("pointermove", onMove);
+    gl.domElement.addEventListener("pointerup", onUp);
+    gl.domElement.addEventListener("pointercancel", onUp);
     gl.domElement.setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (event) => {
-    const e = event.nativeEvent;
+    if (!snap.isPainting || !isDrawingRef.current) return;
+    event.stopPropagation();
 
-    if (snap.isPainting) {
-      if (!isDrawingRef.current) return;
-      event.stopPropagation();
-
-      const uv = getUvFromEvent(e);
-      if (uv) drawAtUv(uv);
-      return;
-    }
-
-    if (!isRotatingRef.current) return;
-
-    const deltaX = e.clientX - lastPointerRef.current.x;
-    const deltaY = e.clientY - lastPointerRef.current.y;
-    lastPointerRef.current = { x: e.clientX, y: e.clientY };
-
-    state.modelRotation[0] += deltaY * 0.005;
-    state.modelRotation[1] -= deltaX * 0.005;
+    const uv = getUvFromEvent(event.nativeEvent);
+    if (uv) drawAtUv(uv);
   };
 
-  const handlePointerUp = (event) => {
+  const handlePointerUp = () => {
     isDrawingRef.current = false;
-    isRotatingRef.current = false;
     lastUvRef.current = null;
-
-    const pointerId = event?.nativeEvent?.pointerId;
-    if (pointerId != null && gl.domElement.hasPointerCapture?.(pointerId)) {
-      gl.domElement.releasePointerCapture(pointerId);
-    }
   };
 
   return (
@@ -901,22 +931,10 @@ const Shirt = () => {
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        onPointerLeave={handlePointerUp}
       >
         {snap.isFullTexture && <Decal position={[0, 0, 0]} rotation={[0, 0, 0]} scale={1} map={fullTexture} />}
 
-        {snap.isLogoTexture && (
-          <Decal
-            position={LogoDecalTransform.position}
-            rotation={LogoDecalTransform.rotation}
-            scale={LogoDecalTransform.scale}
-            map={logoTexture}
-            transparent
-            anisotropy={16}
-            depthTest={false}
-            depthWrite
-          />
-        )}
+        {snap.isLogoTexture && <Decal position={LogoDecalTransform.position} rotation={LogoDecalTransform.rotation} scale={LogoDecalTransform.scale} map={logoTexture} transparent anisotropy={16} depthTest={false} depthWrite />}
       </mesh>
     </group>
   );

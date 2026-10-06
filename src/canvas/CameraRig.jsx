@@ -39,7 +39,7 @@ const CameraRig = ({ children }) => {
             easing.dampE(
                 group.current.rotation,
                 [snap.modelRotation[0], snap.modelRotation[1], 0],
-                0.25,
+                0.4,
                 delta
             )
         }

@@ -178,7 +178,7 @@ html {
   right: 0.5rem;
   bottom: 0;
   margin-inline: auto;
-  width: min(100% - 1rem, 880px);
+  width: fit-content;
   padding-bottom: calc(0.35rem + var(--safe-bottom));
   display: flex;
   flex-direction: row;
@@ -211,7 +211,7 @@ html {
 
 /* —— Team palette —— */
 .team-palette-bar {
-  @apply flex-1 min-w-0 rounded-xl px-1.5 py-1 flex items-center gap-1.5;
+  @apply w-fit min-w-0 rounded-xl px-1.5 py-1 flex items-center gap-1.5;
 }
 
 .team-palette-list {
